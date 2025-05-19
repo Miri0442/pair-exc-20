@@ -1,30 +1,29 @@
-// const { DataTypes } = require("sequelize");
-// const sequelize = require("../config/database");
-
-// const Student = sequelize.define("Student", {
-//   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-//   name: { type: DataTypes.STRING, allowNull: false }
-// }, {
-//   tableName: "Student",
-//   freezeTableName: true
-// });
-
-// module.exports = Student;
 const db = require('../config/db');
 
-const Student = {
-  async createTable() {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS Student (
+const StudentModel = {
+  createTable(callback) {
+    const sql = `
+      CREATE TABLE IF NOT EXISTS Students (
         student_id INT PRIMARY KEY,
         student_name VARCHAR(100) NOT NULL,
         course_ids TEXT
       )
-    `);
+    `;
+    db.query(sql, callback);
   },
 
-  async insertSampleData() {
-    await db.query(`INSERT INTO Students (student_id, student_name, course_ids) VALUES
+  insertSampleData(callback) {
+    const checkSql = "SELECT COUNT(*) AS count FROM Courses";
+    db.query(checkSql, function(err, results) {
+      if (err) return callback(err);
+  
+      if (results[0].count > 0) {
+        console.log("Courses table already has data. Skipping sample data insertion.");
+        return callback(null); 
+      }
+  
+      const insertSql = `
+      INSERT INTO Students (student_id, student_name, course_ids) VALUES
       (101, 'Tom', '1'),
       (102, 'Jerry', '1'),
       (103, 'Anna', '1'),
@@ -35,8 +34,11 @@ const Student = {
       (108, 'Ella', '4'),
       (109, 'Jake', '4'),
       (110, 'Maya', '5')
-    `);
+    `;
+      db.query(insertSql, callback);
+    });
   }
+
 };
 
-module.exports = Student;
+module.exports = StudentModel;
