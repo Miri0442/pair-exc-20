@@ -1,7 +1,5 @@
-const db = require('../config/db');
-
-const CourseModel = {
-  createTable(callback) {
+const Courses = {
+  async createTable(db) {
     const sql = `
       CREATE TABLE IF NOT EXISTS Courses (
         course_id INT PRIMARY KEY,
@@ -10,30 +8,28 @@ const CourseModel = {
         student_ids TEXT
       )
     `;
-    db.query(sql, callback);
+    await db.execute(sql);
   },
 
-  insertSampleData(callback) {
+  async insertSampleData(db) {
     const checkSql = "SELECT COUNT(*) AS count FROM Courses";
-    db.query(checkSql, function (err, results) {
-      if (err) return callback(err);
+    const [results] = await db.execute(checkSql);
 
-      if (results[0].count > 0) {
-        console.log("Courses table already has data. Skipping sample data insertion.");
-        return callback(null);
-      }
+    if (results[0].count > 0) {
+      console.log("Courses table already has data. Skipping sample data insertion.");
+      return;
+    }
 
-      const insertSql = `
-        INSERT INTO Courses (course_id, course_name, teacher_ids, student_ids) VALUES
-        (1, 'Math', '1,2', '101,102,103'),
-        (2, 'History', '2', '104,105'),
-        (3, 'English', '1,3', '106,107'),
-        (4, 'Science', '3', '108,109'),
-        (5, 'Art', '1', '110')
-      `;
-      db.query(insertSql, callback);
-    });
+    const insertSql = `
+      INSERT INTO Courses (course_id, course_name, teacher_ids, student_ids) VALUES
+      (1, 'Math', '1,2', '101,102,103'),
+      (2, 'History', '2', '104,105'),
+      (3, 'English', '1,3', '106,107'),
+      (4, 'Science', '3', '108,109'),
+      (5, 'Art', '1', '110')
+    `;
+    await db.execute(insertSql);
   }
 };
 
-module.exports = CourseModel;
+module.exports = Courses;
